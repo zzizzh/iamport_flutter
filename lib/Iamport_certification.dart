@@ -10,7 +10,7 @@ import 'package:iamport_flutter/model/iamport_validation.dart';
 import 'package:iamport_flutter/model/url_data.dart';
 import 'package:iamport_flutter/widget/iamport_error.dart';
 import 'package:iamport_flutter/widget/iamport_webview.dart';
-import 'package:iamport_webview_flutter/iamport_webview_flutter.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class IamportCertification extends StatelessWidget {
   final PreferredSizeWidget? appBar;
@@ -46,10 +46,10 @@ class IamportCertification extends StatelessWidget {
         type: ActionType.auth,
         appBar: this.appBar,
         initialChild: this.initialChild,
-        gestureRecognizers: this.gestureRecognizers,
+        gestureRecognizers: this.gestureRecognizers ?? {},
         customUserAgent: this.customUserAgent,
         executeJS: (WebViewController controller) {
-          controller.evaluateJavascript('''
+          controller.runJavaScript('''
             IMP.init("${this.userCode}");
             IMP.certification(${jsonEncode(this.data.toJson())}, function(response) {
               const query = [];

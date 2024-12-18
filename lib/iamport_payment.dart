@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -11,8 +9,8 @@ import 'package:iamport_flutter/model/payment_data.dart';
 import 'package:iamport_flutter/model/url_data.dart';
 import 'package:iamport_flutter/widget/iamport_error.dart';
 import 'package:iamport_flutter/widget/iamport_webview.dart';
-import 'package:iamport_webview_flutter/iamport_webview_flutter.dart';
 import 'package:app_links/app_links.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class IamportPayment extends StatelessWidget {
   final PreferredSizeWidget? appBar;
@@ -49,9 +47,9 @@ class IamportPayment extends StatelessWidget {
         type: ActionType.payment,
         appBar: this.appBar,
         initialChild: this.initialChild,
-        gestureRecognizers: this.gestureRecognizers,
+        gestureRecognizers: this.gestureRecognizers ?? {},
         executeJS: (WebViewController controller) {
-          controller.evaluateJavascript('''
+          controller.runJavaScript('''
             IMP.init("${this.userCode}");
             IMP.request_pay(${jsonEncode(this.data.toJson())}, function(response) {
               const query = [];
@@ -63,12 +61,6 @@ class IamportPayment extends StatelessWidget {
           ''');
         },
         customPGAction: (WebViewController controller) {
-          if (this.data.pg == 'smilepay') {
-            // webview_flutter에서 iOS는 쿠키가 기본적으로 허용되어있는 것으로 추정
-            if (Platform.isAndroid) {
-              controller.setAcceptThirdPartyCookies(true);
-            }
-          }
           /* [v0.9.6] niceMobileV2: true 대비 코드 작성 */
           if (this.data.pg == 'nice' && this.data.payMethod == 'trans') {
             try {
@@ -86,7 +78,7 @@ class IamportPayment extends StatelessWidget {
                         niceTransRedirectionUrl = value;
                       }
                     });
-                    await controller.evaluateJavascript('''
+                    await controller.runJavaScript('''
                     location.href = "$niceTransRedirectionUrl?$queryToString";
                   ''');
                   }
